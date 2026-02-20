@@ -231,4 +231,66 @@ promotedTweets
     await removePromotedTweet(opts.id, opts.account);
   });
 
+const cards = program
+  .command("cards")
+  .description("Manage website cards");
+
+cards
+  .command("list", { isDefault: true })
+  .description("List website cards for an ad account")
+  .option("--account <id>", "Ad account ID (overrides X_AD_ACCOUNT_ID)")
+  .action(async (opts) => {
+    const { listCards } = await import("./commands/cards.js");
+    await listCards(opts.account);
+  });
+
+cards
+  .command("create")
+  .description("Create a new website card")
+  .requiredOption("--name <name>", "Card name (internal label)")
+  .requiredOption("--title <title>", "Website title displayed on the card (max 70 chars)")
+  .requiredOption("--url <url>", "Destination URL")
+  .requiredOption("--image <path>", "Path to image file (.jpg, .png, .gif, .webp)")
+  .option("--account <id>", "Ad account ID (overrides X_AD_ACCOUNT_ID)")
+  .action(async (opts) => {
+    const { createWebsiteCard } = await import("./commands/cards.js");
+    await createWebsiteCard(opts, opts.account);
+  });
+
+cards
+  .command("update")
+  .description("Update an existing website card")
+  .requiredOption("--id <id>", "Card ID")
+  .option("--name <name>", "New card name")
+  .option("--title <title>", "New website title")
+  .option("--url <url>", "New destination URL")
+  .option("--account <id>", "Ad account ID (overrides X_AD_ACCOUNT_ID)")
+  .action(async (opts) => {
+    const { updateCard } = await import("./commands/cards.js");
+    await updateCard(opts, opts.account);
+  });
+
+cards
+  .command("remove")
+  .description("Remove (delete) a website card")
+  .requiredOption("--id <id>", "Card ID")
+  .option("--account <id>", "Ad account ID (overrides X_AD_ACCOUNT_ID)")
+  .action(async (opts) => {
+    const { removeCard } = await import("./commands/cards.js");
+    await removeCard(opts.id, opts.account);
+  });
+
+const media = program
+  .command("media")
+  .description("Media upload utilities");
+
+media
+  .command("upload")
+  .description("Upload a media file and print the media_key")
+  .argument("<path>", "Path to media file (.jpg, .png, .gif, .webp, .mp4)")
+  .action(async (filePath: string) => {
+    const { uploadMediaCommand } = await import("./commands/cards.js");
+    await uploadMediaCommand(filePath);
+  });
+
 program.parse();
