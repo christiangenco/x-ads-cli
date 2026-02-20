@@ -382,6 +382,21 @@ audiences
     await removeAudience(opts.id, opts.account);
   });
 
+program
+  .command("analytics")
+  .description("Performance reporting at campaign, line item, and promoted tweet levels")
+  .option("--entity <type>", "Entity type: CAMPAIGN, LINE_ITEM, or PROMOTED_TWEET", "CAMPAIGN")
+  .option("--ids <id1,id2,...>", "Specific entity IDs (comma-separated). If omitted, fetches all.")
+  .option("--date-range <preset|range>", "Date range: today, yesterday, last_7d, last_14d, last_30d, this_month, last_month, or YYYY-MM-DD..YYYY-MM-DD", "last_7d")
+  .option("--granularity <gran>", "Granularity: TOTAL, DAY, or HOUR", "TOTAL")
+  .option("--campaign <id>", "Shortcut: set entity=CAMPAIGN and ids=[id]")
+  .option("--line-item <id>", "Shortcut: set entity=LINE_ITEM and ids=[id]")
+  .option("--account <id>", "Ad account ID (overrides X_AD_ACCOUNT_ID)")
+  .action(async (opts) => {
+    const { getAnalytics } = await import("./commands/analytics.js");
+    await getAnalytics(opts);
+  });
+
 const media = program
   .command("media")
   .description("Media upload utilities");
