@@ -280,6 +280,74 @@ cards
     await removeCard(opts.id, opts.account);
   });
 
+const targeting = program
+  .command("targeting")
+  .description("Browse targeting options and manage criteria on line items");
+
+targeting
+  .command("locations <query>")
+  .description("Search for location targeting options")
+  .action(async (query: string) => {
+    const { searchLocations } = await import("./commands/targeting.js");
+    await searchLocations(query);
+  });
+
+targeting
+  .command("interests")
+  .description("List interest targeting categories")
+  .action(async () => {
+    const { listInterests } = await import("./commands/targeting.js");
+    await listInterests();
+  });
+
+targeting
+  .command("conversations <query>")
+  .description("Search for conversation topic targeting options")
+  .action(async (query: string) => {
+    const { searchConversations } = await import("./commands/targeting.js");
+    await searchConversations(query);
+  });
+
+targeting
+  .command("platforms")
+  .description("List platform targeting options")
+  .action(async () => {
+    const { listPlatforms } = await import("./commands/targeting.js");
+    await listPlatforms();
+  });
+
+targeting
+  .command("show")
+  .description("Show targeting criteria for a line item")
+  .requiredOption("--line-item <id>", "Line item ID")
+  .option("--account <id>", "Ad account ID (overrides X_AD_ACCOUNT_ID)")
+  .action(async (opts) => {
+    const { showTargeting } = await import("./commands/targeting.js");
+    await showTargeting(opts.lineItem, opts.account);
+  });
+
+targeting
+  .command("add")
+  .description("Add targeting criteria to a line item")
+  .requiredOption("--line-item <id>", "Line item ID")
+  .requiredOption("--type <type>", "Targeting type (LOCATION, INTEREST, AGE, GENDER, etc.)")
+  .requiredOption("--value <values...>", "Targeting value(s) — repeat for multiple")
+  .option("--account <id>", "Ad account ID (overrides X_AD_ACCOUNT_ID)")
+  .action(async (opts) => {
+    const { addTargeting } = await import("./commands/targeting.js");
+    await addTargeting(opts.lineItem, opts.type, opts.value, opts.account);
+  });
+
+targeting
+  .command("remove")
+  .description("Remove a targeting criterion")
+  .requiredOption("--id <id>", "Targeting criteria ID")
+  .option("--account <id>", "Ad account ID (overrides X_AD_ACCOUNT_ID)")
+  .action(async (opts) => {
+    const { removeTargeting } = await import("./commands/targeting.js");
+    await removeTargeting(opts.id, opts.account);
+  });
+
 const media = program
   .command("media")
   .description("Media upload utilities");
