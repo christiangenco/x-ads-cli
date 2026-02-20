@@ -27,4 +27,25 @@ auth
     await authStatus();
   });
 
+program
+  .command("accounts")
+  .description("List accessible ad accounts")
+  .action(async () => {
+    const { listAccounts } = await import("./commands/accounts.js");
+    await listAccounts();
+  });
+
+const funding = program
+  .command("funding")
+  .description("Manage funding instruments (payment methods)");
+
+funding
+  .command("list", { isDefault: true })
+  .description("List funding instruments for an ad account")
+  .option("--account <id>", "Ad account ID (overrides X_AD_ACCOUNT_ID)")
+  .action(async (opts) => {
+    const { listFunding } = await import("./commands/funding.js");
+    await listFunding(opts.account);
+  });
+
 program.parse();
