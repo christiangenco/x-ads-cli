@@ -1,4 +1,5 @@
 import { getAdAccountId, xApi, xApiFetchAllPages } from "../config.js";
+import { isPretty, outputOk, outputError } from "../output.js";
 
 function formatSize(size: number | null | undefined): string {
   if (size == null) return "—";
@@ -18,7 +19,16 @@ export async function listAudiences(accountId?: string): Promise<void> {
   });
 
   if (audiences.length === 0) {
-    console.log("No tailored audiences found.");
+    if (isPretty()) {
+      console.log("No tailored audiences found.");
+    } else {
+      outputOk([]);
+    }
+    return;
+  }
+
+  if (!isPretty()) {
+    outputOk(audiences);
     return;
   }
 
@@ -70,6 +80,11 @@ export async function createAudience(name: string, listType: string, accountId?:
 
   const audience = response.data;
 
+  if (!isPretty()) {
+    outputOk(audience);
+    return;
+  }
+
   console.log(`✅ Created tailored audience: ${audience.id}`);
   console.log(`   Name: ${audience.name}`);
   console.log(`   List Type: ${listType}`);
@@ -84,6 +99,11 @@ export async function removeAudience(audienceId: string, accountId?: string): Pr
   const id = getAdAccountId(accountId);
 
   await xApi("DELETE", `accounts/${id}/tailored_audiences/${audienceId}`);
+
+  if (!isPretty()) {
+    outputOk({ id: audienceId, deleted: true });
+    return;
+  }
 
   console.log(`✅ Removed tailored audience ${audienceId}`);
 }

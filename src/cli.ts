@@ -1,11 +1,16 @@
 import { Command } from "commander";
+import { setPretty } from "./output.js";
 
 const program = new Command();
 
 program
-  .name("x-ads")
+  .name("x-ads-cli")
   .description("CLI tool for managing X (Twitter) ad campaigns")
-  .version("0.1.0");
+  .version("0.1.0")
+  .option("--pretty", "Human-readable formatted output (default: JSON)")
+  .hook("preAction", () => {
+    if (program.opts().pretty) setPretty(true);
+  });
 
 const auth = program
   .command("auth")

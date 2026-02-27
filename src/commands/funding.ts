@@ -1,4 +1,5 @@
 import { getAdAccountId, xApiFetchAllPages } from "../config.js";
+import { isPretty, outputOk, outputError } from "../output.js";
 
 function formatMicros(micros: number | null | undefined): string {
   if (micros == null) return "—";
@@ -14,7 +15,16 @@ export async function listFunding(accountId?: string): Promise<void> {
   });
 
   if (instruments.length === 0) {
-    console.log("No funding instruments found. Add a payment method at ads.x.com");
+    if (isPretty()) {
+      console.log("No funding instruments found. Add a payment method at ads.x.com");
+    } else {
+      outputOk([]);
+    }
+    return;
+  }
+
+  if (!isPretty()) {
+    outputOk(instruments);
     return;
   }
 

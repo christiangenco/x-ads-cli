@@ -1,5 +1,6 @@
 import { getAdAccountId, xApi, xApiFetchAllPages } from "../config.js";
 import { uploadMedia } from "../media.js";
+import { isPretty, outputOk, outputError } from "../output.js";
 
 export async function listCards(accountId?: string): Promise<void> {
   const id = getAdAccountId(accountId);
@@ -9,7 +10,16 @@ export async function listCards(accountId?: string): Promise<void> {
   });
 
   if (cards.length === 0) {
-    console.log("No website cards found.");
+    if (isPretty()) {
+      console.log("No website cards found.");
+    } else {
+      outputOk([]);
+    }
+    return;
+  }
+
+  if (!isPretty()) {
+    outputOk(cards);
     return;
   }
 
@@ -55,9 +65,9 @@ export async function createWebsiteCard(opts: CreateCardOpts, accountId?: string
   const id = getAdAccountId(accountId);
 
   // Step 1: Upload the image
-  console.log(`Uploading image: ${opts.image}`);
+  if (isPretty()) console.log(`Uploading image: ${opts.image}`);
   const mediaKey = await uploadMedia(opts.image);
-  console.log(`  Media key: ${mediaKey}`);
+  if (isPretty()) console.log(`  Media key: ${mediaKey}`);
 
   // Step 2: Create the website card
   const body: Record<string, string> = {
@@ -69,6 +79,11 @@ export async function createWebsiteCard(opts: CreateCardOpts, accountId?: string
 
   const response = await xApi("POST", `accounts/${id}/cards/website`, undefined, body);
   const card = response.data;
+
+  if (!isPretty()) {
+    outputOk(card);
+    return;
+  }
 
   console.log(`✅ Created website card: ${card.id}`);
   console.log(`   Card URI: ${card.card_uri}`);
@@ -100,12 +115,16 @@ export async function updateCard(opts: UpdateCardOpts, accountId?: string): Prom
   }
 
   if (Object.keys(body).length === 0) {
-    console.error("No update fields provided. Use --name, --title, or --url.");
-    process.exit(1);
+    outputError("No update fields provided. Use --name, --title, or --url.");
   }
 
   const response = await xApi("PUT", `accounts/${acctId}/cards/website/${opts.id}`, undefined, body);
   const card = response.data;
+
+  if (!isPretty()) {
+    outputOk(card);
+    return;
+  }
 
   console.log(`✅ Website card updated`);
   console.log(`   ID:    ${card.id}`);
@@ -119,10 +138,21 @@ export async function removeCard(cardId: string, accountId?: string): Promise<vo
 
   await xApi("DELETE", `accounts/${acctId}/cards/website/${cardId}`);
 
+  if (!isPretty()) {
+    outputOk({ id: cardId, deleted: true });
+    return;
+  }
+
   console.log(`✅ Website card ${cardId} removed`);
 }
 
 export async function uploadMediaCommand(filePath: string): Promise<void> {
   const mediaKey = await uploadMedia(filePath);
+
+  if (!isPretty()) {
+    outputOk({ media_key: mediaKey });
+    return;
+  }
+
   console.log(`✅ Uploaded media: media_key=${mediaKey}`);
 }

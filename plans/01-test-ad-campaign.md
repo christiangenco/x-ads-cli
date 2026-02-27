@@ -6,7 +6,10 @@
 - **Requested**: February 20, 2026 at 11:09 AM CST
 - **Method**: DM to @AdsSupport on X
 - **Message**: "Hi, I'd like to request Ads API Standard Access for my developer app. App ID: 32438296, app name: x-ads. I'm building a CLI tool for programmatic management of X ad campaigns. My developer account is @cgenco (user ID: 5437912). Thank you!"
-- **Expected timeline**: A few days to a couple of weeks
+- **Response** (11:09 AM): Ads API access requires a dedicated Sales representative. X Ads Support cannot grant it directly — a Sales rep must apply internally on your behalf.
+- **Follow-up sent** (Feb 20, ~12:05 PM CST): "Thanks! I don't currently have a dedicated Sales representative. Could you help connect me with one? We're looking to manage ad campaigns programmatically via the API."
+- **Next step**: Wait for @AdsSupport to reply with instructions on connecting with a Sales rep. If no response within a few days, follow up again. If Sales rep path stalls, consider using `agent-chrome` to automate the X Ads UI as a workaround.
+- **Expected timeline**: Unknown — depends on Sales rep assignment and internal approval process
 
 ### How to Check if Approved
 ```bash

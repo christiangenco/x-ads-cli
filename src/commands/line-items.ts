@@ -1,4 +1,5 @@
 import { getAdAccountId, xApi, xApiFetchAllPages } from "../config.js";
+import { isPretty, outputOk, outputError } from "../output.js";
 
 function formatMicros(micros: number | null | undefined): string {
   if (micros == null) return "—";
@@ -31,7 +32,16 @@ export async function listLineItems(campaignId?: string, accountId?: string): Pr
   const lineItems = await xApiFetchAllPages("GET", `accounts/${id}/line_items`, params);
 
   if (lineItems.length === 0) {
-    console.log("No line items found.");
+    if (isPretty()) {
+      console.log("No line items found.");
+    } else {
+      outputOk([]);
+    }
+    return;
+  }
+
+  if (!isPretty()) {
+    outputOk(lineItems);
     return;
   }
 
@@ -128,6 +138,11 @@ export async function createLineItem(opts: CreateLineItemOpts, accountId?: strin
   const response = await xApi("POST", `accounts/${id}/line_items`, undefined, body);
   const li = response.data;
 
+  if (!isPretty()) {
+    outputOk(li);
+    return;
+  }
+
   console.log(`✅ Line item created`);
   console.log(`   ID:           ${li.id}`);
   console.log(`   Name:         ${li.name}`);
@@ -173,12 +188,16 @@ export async function updateLineItem(opts: UpdateLineItemOpts, accountId?: strin
   }
 
   if (Object.keys(body).length === 0) {
-    console.error("No update fields provided. Use --name, --status, --bid, --auto-bid, or --total-budget.");
-    process.exit(1);
+    outputError("No update fields provided. Use --name, --status, --bid, --auto-bid, or --total-budget.");
   }
 
   const response = await xApi("PUT", `accounts/${acctId}/line_items/${opts.id}`, undefined, body);
   const li = response.data;
+
+  if (!isPretty()) {
+    outputOk(li);
+    return;
+  }
 
   console.log(`✅ Line item updated`);
   console.log(`   ID:           ${li.id}`);
@@ -196,6 +215,11 @@ export async function removeLineItem(lineItemId: string, accountId?: string): Pr
   const acctId = getAdAccountId(accountId);
 
   await xApi("DELETE", `accounts/${acctId}/line_items/${lineItemId}`);
+
+  if (!isPretty()) {
+    outputOk({ id: lineItemId, deleted: true });
+    return;
+  }
 
   console.log(`✅ Line item ${lineItemId} removed`);
 }

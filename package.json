@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "bin": {
-    "x-ads": "./bin/x-ads.js"
+    "x-ads-cli": "./bin/x-ads.js"
   },
   "scripts": {
     "build": "tsc",

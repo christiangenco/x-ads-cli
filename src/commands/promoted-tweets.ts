@@ -1,4 +1,5 @@
 import { getAdAccountId, xApi, xApiFetchAllPages, twitterApi } from "../config.js";
+import { isPretty, outputOk, outputError } from "../output.js";
 
 export async function listPromotedTweets(lineItemId?: string, accountId?: string): Promise<void> {
   const id = getAdAccountId(accountId);
@@ -14,7 +15,16 @@ export async function listPromotedTweets(lineItemId?: string, accountId?: string
   const promotedTweets = await xApiFetchAllPages("GET", `accounts/${id}/promoted_tweets`, params);
 
   if (promotedTweets.length === 0) {
-    console.log("No promoted tweets found.");
+    if (isPretty()) {
+      console.log("No promoted tweets found.");
+    } else {
+      outputOk([]);
+    }
+    return;
+  }
+
+  if (!isPretty()) {
+    outputOk(promotedTweets);
     return;
   }
 
@@ -59,6 +69,11 @@ export async function promoteTweet(lineItemId: string, tweetIds: string[], accou
 
   const data = Array.isArray(response.data) ? response.data : [response.data];
 
+  if (!isPretty()) {
+    outputOk(data);
+    return;
+  }
+
   console.log("✅ Promoted tweet(s):");
   for (const pt of data) {
     console.log(`  ${pt.id} → tweet ${pt.tweet_id}`);
@@ -79,6 +94,11 @@ export async function createTweet(text: string, opts?: { cardId?: string; mediaI
   const response = await twitterApi("POST", "tweets", body);
   const tweetId = response.data.id;
 
+  if (!isPretty()) {
+    outputOk(response.data);
+    return;
+  }
+
   console.log(`✅ Created tweet: ${tweetId}`);
   console.log(`Promote it with: x-ads promoted-tweets promote --line-item <LINE_ITEM_ID> --tweet ${tweetId}`);
 }
@@ -87,6 +107,11 @@ export async function removePromotedTweet(promotedTweetId: string, accountId?: s
   const id = getAdAccountId(accountId);
 
   await xApi("DELETE", `accounts/${id}/promoted_tweets/${promotedTweetId}`);
+
+  if (!isPretty()) {
+    outputOk({ id: promotedTweetId, deleted: true });
+    return;
+  }
 
   console.log(`✅ Removed promoted tweet ${promotedTweetId}`);
 }

@@ -1,4 +1,5 @@
 import { xApiFetchAllPages } from "../config.js";
+import { isPretty, outputOk, outputError } from "../output.js";
 
 export async function listAccounts(): Promise<void> {
   const accounts = await xApiFetchAllPages("GET", "accounts", {
@@ -6,7 +7,16 @@ export async function listAccounts(): Promise<void> {
   });
 
   if (accounts.length === 0) {
-    console.log("No ad accounts found. Set up an ad account at ads.x.com");
+    if (isPretty()) {
+      console.log("No ad accounts found. Set up an ad account at ads.x.com");
+    } else {
+      outputOk([]);
+    }
+    return;
+  }
+
+  if (!isPretty()) {
+    outputOk(accounts);
     return;
   }
 

@@ -1,4 +1,5 @@
 import { getAdAccountId, xApi, xApiFetchAllPages } from "../config.js";
+import { isPretty, outputOk, outputError } from "../output.js";
 
 function formatMicros(micros: number | null | undefined): string {
   if (micros == null) return "—";
@@ -18,7 +19,16 @@ export async function listCampaigns(accountId?: string): Promise<void> {
   });
 
   if (campaigns.length === 0) {
-    console.log("No campaigns found.");
+    if (isPretty()) {
+      console.log("No campaigns found.");
+    } else {
+      outputOk([]);
+    }
+    return;
+  }
+
+  if (!isPretty()) {
+    outputOk(campaigns);
     return;
   }
 
@@ -98,6 +108,11 @@ export async function createCampaign(opts: CreateCampaignOpts, accountId?: strin
   const response = await xApi("POST", `accounts/${id}/campaigns`, undefined, body);
   const campaign = response.data;
 
+  if (!isPretty()) {
+    outputOk(campaign);
+    return;
+  }
+
   console.log(`✅ Campaign created`);
   console.log(`   ID:           ${campaign.id}`);
   console.log(`   Name:         ${campaign.name}`);
@@ -136,12 +151,16 @@ export async function updateCampaign(opts: UpdateCampaignOpts, accountId?: strin
   }
 
   if (Object.keys(body).length === 0) {
-    console.error("No update fields provided. Use --name, --status, --budget, or --total-budget.");
-    process.exit(1);
+    outputError("No update fields provided. Use --name, --status, --budget, or --total-budget.");
   }
 
   const response = await xApi("PUT", `accounts/${acctId}/campaigns/${opts.id}`, undefined, body);
   const campaign = response.data;
+
+  if (!isPretty()) {
+    outputOk(campaign);
+    return;
+  }
 
   console.log(`✅ Campaign updated`);
   console.log(`   ID:           ${campaign.id}`);
@@ -159,6 +178,11 @@ export async function removeCampaign(campaignId: string, accountId?: string): Pr
   const acctId = getAdAccountId(accountId);
 
   await xApi("DELETE", `accounts/${acctId}/campaigns/${campaignId}`);
+
+  if (!isPretty()) {
+    outputOk({ id: campaignId, deleted: true });
+    return;
+  }
 
   console.log(`✅ Campaign ${campaignId} removed`);
 }

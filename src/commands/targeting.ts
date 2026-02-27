@@ -1,4 +1,5 @@
 import { getAdAccountId, xApi, xApiFetchAllPages } from "../config.js";
+import { isPretty, outputOk, outputError } from "../output.js";
 
 export async function searchLocations(query: string): Promise<void> {
   const response = await xApi("GET", "targeting_criteria/locations", {
@@ -9,7 +10,16 @@ export async function searchLocations(query: string): Promise<void> {
   const locations = response.data || [];
 
   if (locations.length === 0) {
-    console.log("No locations found.");
+    if (isPretty()) {
+      console.log("No locations found.");
+    } else {
+      outputOk([]);
+    }
+    return;
+  }
+
+  if (!isPretty()) {
+    outputOk(locations);
     return;
   }
 
@@ -50,7 +60,16 @@ export async function listInterests(): Promise<void> {
   const interests = response.data || [];
 
   if (interests.length === 0) {
-    console.log("No interests found.");
+    if (isPretty()) {
+      console.log("No interests found.");
+    } else {
+      outputOk([]);
+    }
+    return;
+  }
+
+  if (!isPretty()) {
+    outputOk(interests);
     return;
   }
 
@@ -90,7 +109,16 @@ export async function searchConversations(query: string): Promise<void> {
   const conversations = response.data || [];
 
   if (conversations.length === 0) {
-    console.log("No conversations found.");
+    if (isPretty()) {
+      console.log("No conversations found.");
+    } else {
+      outputOk([]);
+    }
+    return;
+  }
+
+  if (!isPretty()) {
+    outputOk(conversations);
     return;
   }
 
@@ -128,7 +156,16 @@ export async function listPlatforms(): Promise<void> {
   const platforms = response.data || [];
 
   if (platforms.length === 0) {
-    console.log("No platforms found.");
+    if (isPretty()) {
+      console.log("No platforms found.");
+    } else {
+      outputOk([]);
+    }
+    return;
+  }
+
+  if (!isPretty()) {
+    outputOk(platforms);
     return;
   }
 
@@ -163,7 +200,16 @@ export async function showTargeting(lineItemId: string, accountId?: string): Pro
   });
 
   if (criteria.length === 0) {
-    console.log(`No targeting criteria for line item ${lineItemId}.`);
+    if (isPretty()) {
+      console.log(`No targeting criteria for line item ${lineItemId}.`);
+    } else {
+      outputOk([]);
+    }
+    return;
+  }
+
+  if (!isPretty()) {
+    outputOk(criteria);
     return;
   }
 
@@ -195,6 +241,8 @@ export async function addTargeting(
 ): Promise<void> {
   const id = getAdAccountId(accountId);
 
+  const added: any[] = [];
+
   for (const value of values) {
     const body: Record<string, string> = {
       line_item_id: lineItemId,
@@ -204,9 +252,17 @@ export async function addTargeting(
 
     const response = await xApi("POST", `accounts/${id}/targeting_criteria`, undefined, body);
     const c = response.data;
+    added.push(c);
 
-    const name = c.name ? `${c.name} (${c.targeting_value})` : c.targeting_value;
-    console.log(`✅ Added ${type}: ${name}  [${c.id}]`);
+    if (isPretty()) {
+      const name = c.name ? `${c.name} (${c.targeting_value})` : c.targeting_value;
+      console.log(`✅ Added ${type}: ${name}  [${c.id}]`);
+    }
+  }
+
+  if (!isPretty()) {
+    outputOk(added);
+    return;
   }
 
   // Print updated targeting summary
@@ -218,6 +274,11 @@ export async function removeTargeting(targetingCriteriaId: string, accountId?: s
   const id = getAdAccountId(accountId);
 
   await xApi("DELETE", `accounts/${id}/targeting_criteria/${targetingCriteriaId}`);
+
+  if (!isPretty()) {
+    outputOk({ id: targetingCriteriaId, deleted: true });
+    return;
+  }
 
   console.log(`✅ Targeting criterion ${targetingCriteriaId} removed`);
 }

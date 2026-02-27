@@ -1,4 +1,5 @@
 import { getAdAccountId, xApi, xApiFetchAllPages } from "../config.js";
+import { isPretty, outputOk, outputError } from "../output.js";
 
 type EntityType = "CAMPAIGN" | "LINE_ITEM" | "PROMOTED_TWEET";
 type Granularity = "TOTAL" | "DAY" | "HOUR";
@@ -25,8 +26,7 @@ function parseDateRange(input: string): DateRange {
   if (input.includes("..")) {
     const [startStr, endStr] = input.split("..");
     if (!startStr || !endStr) {
-      console.error(`Invalid date range format: "${input}". Use YYYY-MM-DD..YYYY-MM-DD`);
-      process.exit(1);
+      outputError(`Invalid date range format: "${input}". Use YYYY-MM-DD..YYYY-MM-DD`);
     }
     return {
       startTime: new Date(startStr + "T00:00:00Z").toISOString().replace(".000Z", "Z"),
@@ -95,8 +95,10 @@ function parseDateRange(input: string): DateRange {
       };
     }
     default:
-      console.error(`Unknown date range preset: "${input}". Use: today, yesterday, last_7d, last_14d, last_30d, this_month, last_month, or YYYY-MM-DD..YYYY-MM-DD`);
-      process.exit(1);
+      // outputError calls process.exit(1), so this never returns
+      outputError(`Unknown date range preset: "${input}". Use: today, yesterday, last_7d, last_14d, last_30d, this_month, last_month, or YYYY-MM-DD..YYYY-MM-DD`);
+      // TypeScript needs this for the return type but it's unreachable
+      throw new Error("unreachable");
   }
 }
 
@@ -213,7 +215,11 @@ export async function getAnalytics(opts: AnalyticsOpts): Promise<void> {
   }
 
   if (entityIds.length === 0) {
-    console.log(`No ${entity.toLowerCase().replace("_", " ")}s found.`);
+    if (isPretty()) {
+      console.log(`No ${entity.toLowerCase().replace("_", " ")}s found.`);
+    } else {
+      outputOk([]);
+    }
     return;
   }
 
@@ -306,7 +312,35 @@ export async function getAnalytics(opts: AnalyticsOpts): Promise<void> {
   }
 
   if (rows.length === 0) {
-    console.log("No data found for the selected date range.");
+    if (isPretty()) {
+      console.log("No data found for the selected date range.");
+    } else {
+      outputOk([]);
+    }
+    return;
+  }
+
+  // JSON output: return computed rows with derived metrics
+  if (!isPretty()) {
+    const jsonRows = rows.map((row) => {
+      const ctr = row.impressions > 0 ? (row.clicks / row.impressions) * 100 : 0;
+      const spendDollars = row.spend / 1_000_000;
+      const cpc = row.clicks > 0 ? spendDollars / row.clicks : 0;
+      return {
+        id: row.id,
+        name: row.name,
+        ...(row.date ? { date: row.date } : {}),
+        impressions: row.impressions,
+        clicks: row.clicks,
+        url_clicks: row.urlClicks,
+        ctr: Math.round(ctr * 100) / 100,
+        cpc: Math.round(cpc * 100) / 100,
+        spend: Math.round(spendDollars * 100) / 100,
+        engagements: row.engagements,
+        follows: row.follows,
+      };
+    });
+    outputOk(jsonRows);
     return;
   }
 
